@@ -22,7 +22,7 @@ jobs:
 
       - name: Verify tag matches gemspec version
         run: |
-          gemspec_version=$(ruby -e 'load "ruby-odbc.gemspec"; puts spec.version')
+          gemspec_version=$(ruby -e 'puts Gem::Specification.load("ruby-odbc.gemspec").version')
           tag_version="${GITHUB_REF_NAME#v}"
           if [ "$gemspec_version" != "$tag_version" ]; then
             echo "Tag $tag_version does not match gemspec version $gemspec_version"
