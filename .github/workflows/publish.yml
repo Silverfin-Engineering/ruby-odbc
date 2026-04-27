@@ -37,11 +37,10 @@ jobs:
           mkdir -p ~/.gem
           cat > ~/.gem/credentials <<EOF
           ---
-          :gitlab_silverfin: Basic $(printf '%s:%s' "$GITLAB_USER" "$GITLAB_TOKEN" | base64 -w0)
+          :gitlab_silverfin: ${GITLAB_TOKEN}
           EOF
           chmod 0600 ~/.gem/credentials
         env:
-          GITLAB_USER: ${{ secrets.GITLAB_RUBYGEMS_USER }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_RUBYGEMS_TOKEN }}
 
       - name: Push gem
