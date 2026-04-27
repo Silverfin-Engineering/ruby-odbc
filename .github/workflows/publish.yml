@@ -1,0 +1,48 @@
+name: Publish gem to GitLab Package Registry
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GEM_HOST: ${{ vars.GITLAB_RUBYGEMS_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Verify tag matches gemspec version
+        run: |
+          gemspec_version=$(ruby -e 'load "ruby-odbc.gemspec"; puts spec.version')
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$gemspec_version" != "$tag_version" ]; then
+            echo "Tag $tag_version does not match gemspec version $gemspec_version"
+            exit 1
+          fi
+
+      - name: Build gem
+        run: gem build ruby-odbc.gemspec
+
+      - name: Configure credentials
+        run: |
+          mkdir -p ~/.gem
+          cat > ~/.gem/credentials <<EOF
+          ---
+          :gitlab_silverfin: Basic $(printf '%s:%s' "$GITLAB_USER" "$GITLAB_TOKEN" | base64 -w0)
+          EOF
+          chmod 0600 ~/.gem/credentials
+        env:
+          GITLAB_USER: ${{ secrets.GITLAB_RUBYGEMS_USER }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_RUBYGEMS_TOKEN }}
+
+      - name: Push gem
+        run: gem push --key gitlab_silverfin --host "$GEM_HOST" ruby-odbc-*.gem
