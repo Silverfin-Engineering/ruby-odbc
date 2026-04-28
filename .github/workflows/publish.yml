@@ -37,7 +37,7 @@ jobs:
           mkdir -p ~/.gem
           cat > ~/.gem/credentials <<EOF
           ---
-          :gitlab_silverfin: Bearer ${GITLAB_TOKEN}
+          :gitlab_silverfin: ${GITLAB_TOKEN}
           EOF
           chmod 0600 ~/.gem/credentials
         env:
